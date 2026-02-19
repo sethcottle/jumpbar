@@ -1,0 +1,263 @@
+/* ==============================
+   CSS Custom Properties (defaults to Purple)
+   Content script injects overrides per user choice
+   ============================== */
+:root {
+  --kagi-hover-light: #4835BC;
+  --kagi-hover-dark: #C9C1FF;
+  --kagi-hover-shadow-light: rgba(72, 53, 188, 0.25);
+  --kagi-hover-shadow-dark: rgba(201, 193, 255, 0.25);
+  --kagi-focus-light: #4835BC;
+  --kagi-focus-dark: #C9C1FF;
+}
+
+/* Container for all custom buttons */
+.kagi-enhancer-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 20px;
+  animation: fadeIn 0.3s ease-in;
+  position: relative;
+  z-index: 10;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Individual button styling */
+.kagi-enhancer-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button content wrapper */
+.kagi-enhancer-button-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Icon styling — inline SVG wrapper */
+.kagi-enhancer-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.kagi-enhancer-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Color icon img styling */
+.kagi-enhancer-icon-color {
+  border-radius: 3px;
+}
+
+/* Text styling */
+.kagi-enhancer-text {
+  line-height: 1;
+}
+
+/* ==============================
+   Light theme styles (default)
+   ============================== */
+.kagi-enhancer-button {
+  background-color: #ffffff;
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+.kagi-enhancer-button:hover {
+  background-color: #f9fafb;
+  border-color: var(--kagi-hover-light);
+  color: var(--kagi-hover-light);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--kagi-hover-shadow-light);
+}
+
+.kagi-enhancer-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px var(--kagi-hover-shadow-light);
+}
+
+/* ==============================
+   Dark theme — system preference
+   Applies when OS is dark and Kagi is on "Default".
+   Explicit light theme classes override below.
+   ============================== */
+@media (prefers-color-scheme: dark) {
+  .kagi-enhancer-button {
+    background-color: #2d2d30;
+    border-color: #404044;
+    color: #e5e5e7;
+  }
+
+  .kagi-enhancer-button:hover {
+    background-color: #3a3a3e;
+    border-color: var(--kagi-hover-dark);
+    color: var(--kagi-hover-dark);
+    box-shadow: 0 2px 8px var(--kagi-hover-shadow-dark);
+  }
+
+  .kagi-enhancer-button:active {
+    box-shadow: 0 1px 3px var(--kagi-hover-shadow-dark);
+  }
+}
+
+/* ==============================
+   Explicit dark theme (Kagi manual dark)
+   ============================== */
+body[data-theme="dark"] .kagi-enhancer-button,
+html[data-theme="dark"] .kagi-enhancer-button,
+.theme_dark .kagi-enhancer-button,
+.theme_moon_dark .kagi-enhancer-button {
+  background-color: #2d2d30;
+  border-color: #404044;
+  color: #e5e5e7;
+}
+
+body[data-theme="dark"] .kagi-enhancer-button:hover,
+html[data-theme="dark"] .kagi-enhancer-button:hover,
+.theme_dark .kagi-enhancer-button:hover,
+.theme_moon_dark .kagi-enhancer-button:hover {
+  background-color: #3a3a3e;
+  border-color: var(--kagi-hover-dark);
+  color: var(--kagi-hover-dark);
+  box-shadow: 0 2px 8px var(--kagi-hover-shadow-dark);
+}
+
+/* ==============================
+   Kagi "Default" theme + OS dark mode
+   Kagi sets both theme_light AND theme_moon_dark_conditional.
+   The conditional class activates dark styles via media query.
+   ============================== */
+@media (prefers-color-scheme: dark) {
+  .theme_moon_dark_conditional .kagi-enhancer-button {
+    background-color: #2d2d30 !important;
+    border-color: #404044 !important;
+    color: #e5e5e7 !important;
+  }
+
+  .theme_moon_dark_conditional .kagi-enhancer-button:hover {
+    background-color: #3a3a3e !important;
+    border-color: var(--kagi-hover-dark) !important;
+    color: var(--kagi-hover-dark) !important;
+    box-shadow: 0 2px 8px var(--kagi-hover-shadow-dark) !important;
+  }
+
+  .theme_moon_dark_conditional .kagi-enhancer-button:active {
+    box-shadow: 0 1px 3px var(--kagi-hover-shadow-dark) !important;
+  }
+}
+
+/* ==============================
+   Explicit light theme — override system dark
+   Only when Kagi is manually set to light (not "Default").
+   Exclude theme_moon_dark_conditional so "Default" + OS dark works.
+   ============================== */
+body[data-theme="light"]:not(.theme_moon_dark_conditional) .kagi-enhancer-button,
+html[data-theme="light"]:not(.theme_moon_dark_conditional) .kagi-enhancer-button,
+.theme_light:not(.theme_moon_dark_conditional) .kagi-enhancer-button,
+.theme_moon_light .kagi-enhancer-button {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+body[data-theme="light"]:not(.theme_moon_dark_conditional) .kagi-enhancer-button:hover,
+html[data-theme="light"]:not(.theme_moon_dark_conditional) .kagi-enhancer-button:hover,
+.theme_light:not(.theme_moon_dark_conditional) .kagi-enhancer-button:hover,
+.theme_moon_light .kagi-enhancer-button:hover {
+  background-color: #f9fafb !important;
+  border-color: var(--kagi-hover-light) !important;
+  color: var(--kagi-hover-light) !important;
+  box-shadow: 0 2px 8px var(--kagi-hover-shadow-light) !important;
+}
+
+/* ==============================
+   Fade in animation
+   ============================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==============================
+   Responsive design
+   ============================== */
+@media (max-width: 768px) {
+  .kagi-enhancer-buttons {
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .kagi-enhancer-button {
+    padding: 7px 14px;
+    font-size: 13px;
+  }
+
+  .kagi-enhancer-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .kagi-enhancer-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ==============================
+   Accessibility — focus styles
+   ============================== */
+.kagi-enhancer-button:focus-visible {
+  outline: 2px solid var(--kagi-focus-light);
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .kagi-enhancer-button:focus-visible {
+    outline-color: var(--kagi-focus-dark);
+  }
+}
+
+.theme_dark .kagi-enhancer-button:focus-visible,
+.theme_moon_dark .kagi-enhancer-button:focus-visible,
+.theme_moon_dark_conditional .kagi-enhancer-button:focus-visible {
+  outline-color: var(--kagi-focus-dark);
+}
+
+/* Loading state */
+.kagi-enhancer-buttons.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
