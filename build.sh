@@ -132,7 +132,11 @@ cat > "$DIST_DIR/firefox/manifest.json" << EOF
   "browser_specific_settings": {
     "gecko": {
       "id": "kagi-enhancer@sethcottle.com",
-      "strict_min_version": "121.0"
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": []
+      }
     }
   }
 }
