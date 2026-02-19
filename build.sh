@@ -118,20 +118,21 @@ cat > "$DIST_DIR/firefox/manifest.json" << EOF
     }
   ],
   "web_accessible_resources": [
-    "assets/svgs/color/assistant.svg",
-    "assets/svgs/color/news.svg",
-    "assets/svgs/color/translate.svg",
-    "assets/svgs/color/summarize.svg",
-    "assets/svgs/color/smallweb.svg"
+    {
+      "resources": [
+        "assets/svgs/color/assistant.svg",
+        "assets/svgs/color/news.svg",
+        "assets/svgs/color/translate.svg",
+        "assets/svgs/color/summarize.svg",
+        "assets/svgs/color/smallweb.svg"
+      ],
+      "matches": ["https://kagi.com/*"]
+    }
   ],
   "browser_specific_settings": {
     "gecko": {
       "id": "kagi-enhancer@sethcottle.com",
-      "strict_min_version": "121.0",
-      "data_collection_permissions": {
-        "required": ["none"],
-        "optional": []
-      }
+      "strict_min_version": "121.0"
     }
   }
 }

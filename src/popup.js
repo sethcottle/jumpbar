@@ -27,50 +27,61 @@ function loadIcons() {
 
 // Load current settings from storage
 async function loadSettings() {
-  return new Promise((resolve) => {
-    api.storage.sync.get(['buttonState', 'iconStyle', 'hoverColor', 'openInNewTab'], (result) => {
-      const state = result.buttonState || defaultButtonState;
-      const iconStyle = result.iconStyle || 'simple';
-      const hoverColor = result.hoverColor || 'purple';
-      const openInNewTab = result.openInNewTab || false;
+  const result = await api.storage.local.get(['buttonState', 'iconStyle', 'hoverColor', 'openInNewTab']);
+  const state = result.buttonState || defaultButtonState;
+  const iconStyle = result.iconStyle || 'simple';
+  const hoverColor = result.hoverColor || 'purple';
+  const openInNewTab = result.openInNewTab || false;
 
-      // Update toggle switches
-      Object.keys(state).forEach(buttonId => {
-        const toggle = document.getElementById(buttonId);
-        if (toggle) {
-          toggle.checked = state[buttonId];
-        }
-      });
-
-      // Update open in new tab toggle
-      const newTabToggle = document.getElementById('openInNewTab');
-      if (newTabToggle) {
-        newTabToggle.checked = openInNewTab;
-      }
-
-      // Update icon style selector
-      document.querySelectorAll('.icon-style-option').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.style === iconStyle);
-      });
-
-      // Update hover color palette
-      document.querySelectorAll('.color-swatch').forEach(swatch => {
-        swatch.classList.toggle('active', swatch.dataset.color === hoverColor);
-      });
-
-      resolve({ buttonState: state, iconStyle, hoverColor });
-    });
+  // Update toggle switches
+  Object.keys(state).forEach(buttonId => {
+    const toggle = document.getElementById(buttonId);
+    if (toggle) {
+      toggle.checked = state[buttonId];
+    }
   });
+
+  // Update open in new tab toggle
+  const newTabToggle = document.getElementById('openInNewTab');
+  if (newTabToggle) {
+    newTabToggle.checked = openInNewTab;
+  }
+
+  // Update icon style selector
+  document.querySelectorAll('.icon-style-option').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.style === iconStyle);
+  });
+
+  // Update hover color palette
+  document.querySelectorAll('.color-swatch').forEach(swatch => {
+    swatch.classList.toggle('active', swatch.dataset.color === hoverColor);
+  });
+
+  return { buttonState: state, iconStyle, hoverColor };
+}
+
+// Notify all open Kagi tabs that settings changed
+async function notifyContentScript(key, value) {
+  try {
+    const tabs = await api.tabs.query({ url: 'https://kagi.com/*' });
+    for (const tab of tabs) {
+      api.tabs.sendMessage(tab.id, { type: 'settingsChanged', key, value }).catch(() => {});
+    }
+  } catch (e) {
+    // No Kagi tabs open — that's fine
+  }
 }
 
 // Save button state to storage
 function saveButtonState(buttonState) {
-  api.storage.sync.set({ buttonState });
+  api.storage.local.set({ buttonState });
+  notifyContentScript('buttonState', buttonState);
 }
 
 // Save icon style to storage
 function saveIconStyle(iconStyle) {
-  api.storage.sync.set({ iconStyle });
+  api.storage.local.set({ iconStyle });
+  notifyContentScript('iconStyle', iconStyle);
 }
 
 // Hover color definitions (light/dark pairs matching content.js)
@@ -102,7 +113,8 @@ function applyPopupAccent(colorName) {
 
 // Save hover color to storage
 function saveHoverColor(hoverColor) {
-  api.storage.sync.set({ hoverColor });
+  api.storage.local.set({ hoverColor });
+  notifyContentScript('hoverColor', hoverColor);
 }
 
 // Initialize popup
@@ -128,7 +140,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const newTabToggle = document.getElementById('openInNewTab');
   if (newTabToggle) {
     newTabToggle.addEventListener('change', () => {
-      api.storage.sync.set({ openInNewTab: newTabToggle.checked });
+      api.storage.local.set({ openInNewTab: newTabToggle.checked });
+      notifyContentScript('openInNewTab', newTabToggle.checked);
     });
   }
 

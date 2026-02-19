@@ -27,7 +27,7 @@ Click the extension icon in your toolbar to open settings. You can:
 - **Open in New Tab**: Off by default (links open in the same window). Enable to open services in a new tab.
 - **Service Toggles**: Show or hide individual service buttons.
 
-Settings sync across your devices via your browser's built-in extension storage.
+Settings are saved locally via your browser's built-in extension storage.
 
 ## Building
 
@@ -47,7 +47,7 @@ The JavaScript is identical across both builds. Only the `manifest.json` differs
 
 Jumpbar for Kagi requests a few permissions in the `manifest.json` file.
 
-`storage` allows the extension to save your preferences (icon style, hover color, open in new tab, and service visibility) using the browser's built-in extension storage. This data syncs across your devices if you're signed into your browser.
+`storage` allows the extension to save your preferences (icon style, hover color, open in new tab, and service visibility) using the browser's built-in extension storage.
 
 `kagi.com` (host permission) allows the extension to add the jumpbar buttons to the Kagi homepage.
 

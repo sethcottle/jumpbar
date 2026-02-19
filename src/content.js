@@ -29,23 +29,16 @@ const hoverColors = {
   yellow:   { light: '#B37A00', dark: '#FFD066', shadowLight: 'rgba(179, 122, 0, 0.25)',    shadowDark: 'rgba(255, 208, 102, 0.25)' }
 };
 
-// Inject CSS custom properties for the selected hover color
+// Apply CSS custom properties for the selected hover color directly on the root element
 function applyHoverColor(colorName) {
   const color = hoverColors[colorName] || hoverColors.purple;
-  let styleEl = document.getElementById('kagi-enhancer-hover-vars');
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'kagi-enhancer-hover-vars';
-    document.head.appendChild(styleEl);
-  }
-  styleEl.textContent = `:root {
-    --kagi-hover-light: ${color.light};
-    --kagi-hover-dark: ${color.dark};
-    --kagi-hover-shadow-light: ${color.shadowLight};
-    --kagi-hover-shadow-dark: ${color.shadowDark};
-    --kagi-focus-light: ${color.light};
-    --kagi-focus-dark: ${color.dark};
-  }`;
+  const root = document.documentElement;
+  root.style.setProperty('--kagi-hover-light', color.light);
+  root.style.setProperty('--kagi-hover-dark', color.dark);
+  root.style.setProperty('--kagi-hover-shadow-light', color.shadowLight);
+  root.style.setProperty('--kagi-hover-shadow-dark', color.shadowDark);
+  root.style.setProperty('--kagi-focus-light', color.light);
+  root.style.setProperty('--kagi-focus-dark', color.dark);
 }
 
 // Run on the Kagi homepage
@@ -61,30 +54,27 @@ if (window.location.pathname === '/' && window.location.hostname === 'kagi.com')
   };
 
   // Get button visibility state, icon style, and hover color from storage
-  const getSettings = () => {
-    return new Promise((resolve) => {
-      if (api.storage) {
-        api.storage.sync.get(['buttonState', 'iconStyle', 'hoverColor', 'openInNewTab'], (result) => {
-          resolve({
-            buttonState: result.buttonState || defaultButtonState,
-            iconStyle: result.iconStyle || 'simple',
-            hoverColor: result.hoverColor || 'purple',
-            openInNewTab: result.openInNewTab || false
-          });
-        });
-      } else {
-        const storedButtons = localStorage.getItem('kagiEnhancerButtons');
-        const storedStyle = localStorage.getItem('kagiEnhancerIconStyle');
-        const storedColor = localStorage.getItem('kagiEnhancerHoverColor');
-        const storedNewTab = localStorage.getItem('kagiEnhancerOpenInNewTab');
-        resolve({
-          buttonState: storedButtons ? JSON.parse(storedButtons) : defaultButtonState,
-          iconStyle: storedStyle || 'simple',
-          hoverColor: storedColor || 'purple',
-          openInNewTab: storedNewTab === 'true'
-        });
-      }
-    });
+  const getSettings = async () => {
+    if (api.storage) {
+      const result = await api.storage.local.get(['buttonState', 'iconStyle', 'hoverColor', 'openInNewTab']);
+      return {
+        buttonState: result.buttonState || defaultButtonState,
+        iconStyle: result.iconStyle || 'simple',
+        hoverColor: result.hoverColor || 'purple',
+        openInNewTab: result.openInNewTab || false
+      };
+    } else {
+      const storedButtons = localStorage.getItem('kagiEnhancerButtons');
+      const storedStyle = localStorage.getItem('kagiEnhancerIconStyle');
+      const storedColor = localStorage.getItem('kagiEnhancerHoverColor');
+      const storedNewTab = localStorage.getItem('kagiEnhancerOpenInNewTab');
+      return {
+        buttonState: storedButtons ? JSON.parse(storedButtons) : defaultButtonState,
+        iconStyle: storedStyle || 'simple',
+        hoverColor: storedColor || 'purple',
+        openInNewTab: storedNewTab === 'true'
+      };
+    }
   };
 
   // Wait for the page to load and find the search container
@@ -148,7 +138,9 @@ if (window.location.pathname === '/' && window.location.hostname === 'kagi.com')
       } else {
         const iconWrapper = document.createElement('span');
         iconWrapper.className = 'kagi-enhancer-icon';
-        iconWrapper.innerHTML = svgIcons[btn.id];
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgIcons[btn.id], 'image/svg+xml');
+        iconWrapper.appendChild(svgDoc.documentElement);
         buttonContent.appendChild(iconWrapper);
       }
 
@@ -183,6 +175,21 @@ if (window.location.pathname === '/' && window.location.hostname === 'kagi.com')
       }
     });
   }
+
+  // Listen for messages from popup (more reliable cross-browser)
+  api.runtime.onMessage.addListener((message) => {
+    if (message.type === 'settingsChanged') {
+      if (message.key === 'hoverColor') {
+        applyHoverColor(message.value);
+      } else {
+        const existing = document.querySelector('.kagi-enhancer-buttons');
+        if (existing) {
+          existing.remove();
+        }
+        init();
+      }
+    }
+  });
 
   // Start initialization when DOM is ready
   if (document.readyState === 'loading') {
